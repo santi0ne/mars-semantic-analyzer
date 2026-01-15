@@ -25,6 +25,8 @@ interface AnalysisResult {
       suelo: number;
       arena: number;
       rocas: number;
+      roca_grande: number;
+      fondo: number;
     };
   };
 }
@@ -67,7 +69,7 @@ export default function Analyzier() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.log(errorData)
+        console.log(errorData);
         const msg =
           errorData?.detail || "Ocurrió un error desconocido en el servidor.";
         throw new Error(msg);
@@ -89,109 +91,6 @@ export default function Analyzier() {
       setIsAnalyzing(false);
     }
   };
-
-  // return (
-  //   <div className="grid gap-4 md:grid-cols-2">
-  //     <Card className="bg-card border gap-4 p-6 mx-8 mt-10 rounded-xl">
-  //       <CardHeader className="flex-col items-start gap-2">
-  //         <h1 className="font-semibold">Cargar imagen</h1>
-  //         <p className="text-muted-foreground">
-  //           Cargue una imagen para comenzar el análisis del terreno.
-  //         </p>
-  //       </CardHeader>
-  //       <CardBody className="space-y-4">
-  //         {!image ? (
-  //           <label className="flex min-h-100 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 transition-colors hover:bg-muted/50">
-  //             <Upload className="h-12 w-12 text-muted-foreground" />
-  //             <p className="mt-2 text-sm font-medium text-foreground">
-  //               Carga de imagen
-  //             </p>
-  //             <p className="mt-1 text-xs text-muted-foreground">
-  //               PNG, JPG +10MB
-  //             </p>
-  //             <input
-  //               type="file"
-  //               className="hidden"
-  //               accept="image/*"
-  //               onChange={handleImageUpload}
-  //             />
-  //           </label>
-  //         ) : (
-  //           <div className="space-y-4">
-  //             <div className="relative overflow-hidden rounded-lg border border-border">
-  //               <Image
-  //                 width={75}
-  //                 height={75}
-  //                 src={image || "/placeholder.svg"}
-  //                 alt="Uploaded Mars terrain"
-  //                 className="h-auto w-full object-cover"
-  //               />
-  //             </div>
-  //             <div className="flex gap-2">
-  //               <Button
-  //                 onClick={analyzeImage}
-  //                 color="primary"
-  //                 fullWidth
-  //                 disabled={isAnalyzing}
-  //                 className="flex items-center rounded-md"
-  //               >
-  //                 {isAnalyzing ? (
-  //                   <>
-  //                     <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-  //                     Analizando...
-  //                   </>
-  //                 ) : (
-  //                   <>
-  //                     <ImageIcon className="mr-2 h-4 w-4" />
-  //                     Analizar Terreno
-  //                   </>
-  //                 )}
-  //               </Button>
-  //               <Button
-  //                 variant="bordered"
-  //                 onClick={() => {
-  //                   setImage(null);
-  //                   //setResults(null);
-  //                 }}
-  //                 className="flex items-center rounded-md border-2"
-  //               >
-  //                 Limpiar
-  //               </Button>
-  //             </div>
-  //           </div>
-  //         )}
-  //       </CardBody>
-  //     </Card>
-
-  //     <Card className="bg-card border gap-4 p-6 mx-8 mt-10 rounded-xl">
-  //       <CardHeader className="flex-col items-start gap-2">
-  //         <h1 className="font-semibold">Análisis de resultados</h1>
-  //         <p className="text-muted-foreground">
-  //           Resultados de la caracterización del terreno y la evaluación de la
-  //           transitabilidad.
-  //         </p>
-  //       </CardHeader>
-  //       <CardBody>
-  //         {!results ? (
-  //           <div className="flex min-h-100 flex-col items-center justify-center text-center">
-  //             <div className="rounded-full bg-muted p-4">
-  //               <ImageIcon className="h-8 w-8 text-muted-foreground" />
-  //             </div>
-  //             <p className="mt-4 text-sm font-medium text-foreground">
-  //               Aún no hay análisis.
-  //             </p>
-  //             <p className="mt-1 text-xs text-muted-foreground">
-  //               Cargue una imagen y haga clic en "Analizar Terreno" para ver los
-  //               resultados.
-  //             </p>
-  //           </div>
-  //         ) : (
-  //           <div></div>
-  //         )}
-  //       </CardBody>
-  //     </Card>
-  //   </div>
-  // );
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -278,7 +177,7 @@ export default function Analyzier() {
         </CardBody>
       </Card>
 
-      {/* TARJETA 2: RESULTADOS */}
+      {/* RESULTADOS */}
       <Card className="bg-card border gap-4 p-6 mx-8 mt-10 rounded-xl">
         <CardHeader className="flex-col items-start gap-2">
           <h1 className="font-semibold text-lg">Análisis de resultados</h1>
@@ -324,8 +223,12 @@ export default function Analyzier() {
                     Roca
                   </div>
                   <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-[#1127cca0]"></div>
+                    R. Gr.
+                  </div>
+                  <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-[#00C800]"></div>
-                    Obs.
+                    Fn.
                   </div>
                 </div>
               </div>
@@ -357,7 +260,7 @@ export default function Analyzier() {
                 </p>
               </div>
 
-              {/* 3. ESTADÍSTICAS */}
+              {/* ESTADÍSTICAS */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-muted/30 p-3 rounded-lg text-center border border-border">
                   <span className="block text-xs text-muted-foreground mb-1">
@@ -377,10 +280,26 @@ export default function Analyzier() {
                 </div>
                 <div className="bg-muted/30 p-3 rounded-lg text-center border border-border">
                   <span className="block text-xs text-muted-foreground mb-1">
-                    Obstáculos
+                    Rocas
                   </span>
                   <span className="text-xl font-mono font-semibold">
                     {results.viability.composition.rocas}%
+                  </span>
+                </div>
+                <div className="bg-muted/30 p-3 rounded-lg text-center border border-border">
+                  <span className="block text-xs text-muted-foreground mb-1">
+                    Rocas Grandes
+                  </span>
+                  <span className="text-xl font-mono font-semibold">
+                    {results.viability.composition.roca_grande}%
+                  </span>
+                </div>
+                <div className="bg-muted/30 p-3 rounded-lg text-center border border-border">
+                  <span className="block text-xs text-muted-foreground mb-1">
+                    Fondo
+                  </span>
+                  <span className="text-xl font-mono font-semibold">
+                    {results.viability.composition.fondo}%
                   </span>
                 </div>
               </div>

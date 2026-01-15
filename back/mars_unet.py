@@ -73,36 +73,64 @@ def tensor_to_base64(mask_indices):
     return f"data:image/png;base64,{img_str}"
 
 def analyze_viability(mask_indices):
-    """Calcula porcentajes y determina riesgo"""
+    """
+    Calcula la viabilidad usando reglas compuestas para detectar
+    terrenos mixtos, dunas y campos de rocas.
+    """
     total_pixels = mask_indices.size
     counts = np.bincount(mask_indices.flatten(), minlength=5)
     
-    pct_suelo = (counts[0] / total_pixels) * 100
-    pct_roca = (counts[1] / total_pixels) * 100
-    pct_arena = (counts[2] / total_pixels) * 100
-    pct_roca_grande = (counts[3] / total_pixels) * 100
+    count_suelo = counts[0]       # Suelo
+    count_roca = counts[1]        # Roca Pequeña/Lecho
+    count_arena = counts[2]       # Arena
+    count_roca_grande = counts[3] # Obstáculos
+    count_fondo = counts[4]       
     
-    # Lógica de Viabilidad
-    if pct_roca_grande > 5:
+    total_terreno = total_pixels - count_fondo
+    
+    if total_terreno == 0:
+        return "INCIERTO", "No se detectó terreno visible.", {
+            "suelo": 0, "arena": 0, "rocas": 0, "obstacles": 0
+        }
+
+    # 2. Porcentajes Normalizados
+    pct_suelo = (count_suelo / total_terreno) * 100
+    pct_roca = (count_roca / total_terreno) * 100
+    pct_arena = (count_arena / total_terreno) * 100
+    pct_roca_grande = (count_roca_grande / total_terreno) * 100
+    
+    if pct_roca_grande > 5.0:
         status = "PELIGRO"
-        msg = "Detectadas rocas grandes que impiden el paso."
-    elif pct_arena > 35:
+        msg = "Obstáculos críticos detectados. Riesgo de colisión."
+
+    elif pct_arena > 50.0 and pct_roca < 20.0:
+        status = "PELIGRO"
+        msg = "Posible duna de arena profunda sin tracción. Alto riesgo de atascamiento."
+
+    elif pct_arena > 30.0 and pct_roca > 30.0:
         status = "PRECAUCIÓN"
-        msg = "Alto nivel de arena. Riesgo de atascamiento."
-    elif pct_suelo > 50:
-        status = "VIABLE"
-        msg = "Terreno mayormente firme. Tránsito permitido."
+        msg = "Terreno inestable: Mezcla de arena y rocas sueltas. Tracción reducida."
+
+    elif pct_roca > 50.0:
+        status = "PRECAUCIÓN"
+        msg = "Terreno altamente rugoso/abrasivo. Reducir velocidad para proteger ruedas."
+
+    elif pct_arena > 30.0:
+        status = "PRECAUCIÓN"
+        msg = "Acumulaciones de arena detectadas. Monitorear deslizamiento."
+
     else:
-        status = "INCIERTO"
-        msg = "Terreno complejo, se requiere supervisión manual."
-        
+        status = "VIABLE"
+        msg = "Terreno mayormente firme y estable. Tránsito permitido."
+
+
     return status, msg, {
         "suelo": round(pct_suelo, 1),
         "arena": round(pct_arena, 1),
-        "rocas": round(pct_roca_grande + pct_roca, 1)
+        "rocas": round(pct_roca, 1),       
+        "obstacles": round(pct_roca_grande, 1)
     }
 
-# --- ENDPOINTS ---
 @app.get("/")
 def home():
     return {"message": "API de Marte activa y escuchando..."}
